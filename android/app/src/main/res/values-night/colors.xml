@@ -1,0 +1,5 @@
+<resources>
+    <!-- Other color definitions -->
+    <color name="splash_background">#E3381E</color>
+    <color name="ic_launcher_background">#E3381E</color> <!-- Blue background -->
+</resources>

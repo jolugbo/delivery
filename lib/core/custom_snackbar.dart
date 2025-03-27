@@ -6,14 +6,14 @@ class CustomSnackbar {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.check_circle, color: Colors.white), // Success icon
-          SizedBox(width: 8),
-          Expanded(child: Text(message, style: TextStyle(color: Colors.white))),
+          const Icon(Icons.check_circle, color: Colors.white), // Success icon
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
         ],
       ),
       backgroundColor: Colors.green, // Success color
       behavior: SnackBarBehavior.floating,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -24,14 +24,14 @@ class CustomSnackbar {
     final snackBar = SnackBar(
       content: Row(
         children: [
-          Icon(Icons.error, color: Colors.white), // Error icon
-          SizedBox(width: 8),
-          Expanded(child: Text(message, style: TextStyle(color: Colors.white))),
+          const Icon(Icons.error, color: Colors.white), // Error icon
+          const SizedBox(width: 8),
+          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
         ],
       ),
       backgroundColor: Colors.red, // Error color
       behavior: SnackBarBehavior.floating,
-      duration: Duration(seconds: 3),
+      duration: const Duration(seconds: 3),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
