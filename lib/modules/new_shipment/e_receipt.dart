@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:gt_delivery/constant/app_color.dart';
 import 'package:gt_delivery/constant/app_images.dart';
@@ -9,12 +8,7 @@ import 'package:gt_delivery/utils/widget/back_button.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
-import 'package:flutter/services.dart' show rootBundle;
-
 
 class EReceipt extends StatefulWidget {
   final orderRequest;
@@ -26,8 +20,10 @@ class EReceipt extends StatefulWidget {
 }
 
 class _EReceiptState extends State<EReceipt> {
-  bool isLoading = false;
+  bool isLoading = true;
   dynamic receipt = {};
+  late Future<Map<String, dynamic>> _receiptFuture;
+
   void _loadData() async {
     setState(() {
       isLoading = true;
@@ -35,13 +31,13 @@ class _EReceiptState extends State<EReceipt> {
     try {
       final deliveryProvider =
           Provider.of<DeliveryProvider>(context, listen: false);
-      final receiptResponse = await deliveryProvider.fetchReceipt(
+      _receiptFuture = deliveryProvider.fetchReceipt(
           token: widget.token,
           orderNo: widget.orderRequest["paymentDetails"]["orderNo"]);
-      setState(() {
-        isLoading = false;
-        receipt = receiptResponse["data"];
-      });
+      // setState(() {
+      //   isLoading = false;
+      //   receipt = receiptResponse["data"];
+      // });
       print("receipt ${widget.orderRequest}");
     } catch (error) {
       // Handle errors here
@@ -257,368 +253,454 @@ class _EReceiptState extends State<EReceipt> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    final deliveryProvider =
+        Provider.of<DeliveryProvider>(context, listen: false);
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              const SizedBox(height: 50),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const GoBackButtton(
-                    iconColor: AppColor.black,
-                    color: AppColor.white,
-                    borderColor: AppColor.lightgrey,
-                  ),
-                  Text(
-                    'E-Receipt',
-                    style: AppTextStyle.body(fontWeight: FontWeight.bold),
-                  ),
-                  Image(image: AssetImage(AppImages.printer))
-                ],
-              ),
-              const SizedBox(height: 30),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${receipt["destinationLocation"]["addressLine"]}',
-                          style: AppTextStyle.body(
-                              fontWeight: FontWeight.w500, size: 14),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Pickup Location',
-                          style: AppTextStyle.body(size: 12),
-                        ),
-                      ],
+        body: Stack(children: <Widget>[
+      SingleChildScrollView(
+        child: FutureBuilder<Map<String, dynamic>>(
+              future: _receiptFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    color: Colors.black.withOpacity(0.5),
+                    height: size.height,
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColor.primaryColor,
+                      ),
                     ),
-                  ),
-                  Image(image: AssetImage(AppImages.arrow)),
-                  SizedBox(
-                    width: 150,
+                  );
+                } else if (snapshot.hasError) {
+                  return Center(
+                      child: Text(
+                    "Error: ${snapshot.error}",
+                    style: const TextStyle(
+                        fontSize: 16,
+                        color: AppColor.black,
+                        fontWeight: FontWeight.w500),
+                  ));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return const Center(
+                      child: Text(
+                    "Error Fetching Receipt",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: AppColor.black,
+                        fontWeight: FontWeight.w500),
+                  ));
+                }
+                final receiptResponse = snapshot.data!;
+                receipt = receiptResponse["data"];
+                return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          textAlign: TextAlign.end,
-                          '${receipt["pickupLocation"]["addressLine"]}',
-                          style: AppTextStyle.body(
-                              fontWeight: FontWeight.w500, size: 14),
+                        const SizedBox(height: 50),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const GoBackButtton(
+                              iconColor: AppColor.black,
+                              color: AppColor.white,
+                              borderColor: AppColor.lightgrey,
+                            ),
+                            Text(
+                              'E-Receipt',
+                              style: AppTextStyle.body(
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Image(image: AssetImage(AppImages.printer))
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Package Destination',
-                          style: AppTextStyle.body(size: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(0, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColor.lightdark)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Row(
+                        const SizedBox(height: 30),
+                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              'Receiver',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["receiver"]["firstName"]}',
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.lightdark),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Phone Number',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["receiver"]["phoneNumber"]}',
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.lightdark),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Email',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${widget.orderRequest["receiver"]["email"]}',
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.lightdark),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Address',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              receipt["destinationLocation"]["addressLine"]
-                                          .length >
-                                      30
-                                  ? "${receipt["destinationLocation"]["addressLine"].substring(0, 30)}..."
-                                  : "${receipt["destinationLocation"]["addressLine"]}",
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.lightdark),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Estimated Delivery Date',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              formatDate('${receipt["estimatedDeliveryDate"]}'),
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.primaryColor),
-                            ),
-                          ]),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(0, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColor.lightdark)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Payment Methods',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["paymentMethod"]}',
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.lightdark),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Trackign ID',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["trackingId"]}',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Shipping Method',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["shipmentType"]}',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Status',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Container(
-                              alignment: Alignment.center,
-                              width: 100,
-                              height: 25,
-                              decoration: BoxDecoration(
-                                  color: const Color(0xffFFF6E0),
-                                  borderRadius: BorderRadius.circular(20)),
-                              child: Text(
-                                '${receipt["state"]}',
-                                style: AppTextStyle.body(
-                                    size: 14,
-                                    color: const Color(0xffFFBE4C),
-                                    fontWeight: FontWeight.w500),
+                            SizedBox(
+                              width: 150,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${receipt["pickupLocation"]["addressLine"]}',
+                                    style: AppTextStyle.body(
+                                        fontWeight: FontWeight.w500, size: 14),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Pickup Location',
+                                    style: AppTextStyle.body(size: 12),
+                                  ),
+                                ],
                               ),
                             ),
-                          ]),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 15),
-                decoration: BoxDecoration(
-                    color: const Color.fromARGB(0, 255, 255, 255),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColor.lightdark)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    children: [
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Package',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
+                            Image(image: AssetImage(AppImages.arrow)),
+                            SizedBox(
+                              width: 150,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    textAlign: TextAlign.end,
+                                    '${receipt["destinationLocation"]["addressLine"]}',
+                                    style: AppTextStyle.body(
+                                        fontWeight: FontWeight.w500, size: 14),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'Package Destination',
+                                    style: AppTextStyle.body(size: 12),
+                                  ),
+                                ],
+                              ),
                             ),
-                            Text(
-                              '${receipt["shipmentFee"]["freightFee"]}',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                              color: const Color.fromARGB(0, 255, 255, 255),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColor.lightdark)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: [
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Receiver',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["receiver"]["firstName"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.lightdark),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Phone Number',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["receiver"]["phoneNumber"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.lightdark),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Email',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${widget.orderRequest["receiver"]["email"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.lightdark),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Address',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        receipt["destinationLocation"]
+                                                        ["addressLine"]
+                                                    .length >
+                                                30
+                                            ? "${receipt["destinationLocation"]["addressLine"].substring(0, 30)}..."
+                                            : "${receipt["destinationLocation"]["addressLine"]}",
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.lightdark),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Estimated Delivery Date',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        formatDate(
+                                            '${receipt["estimatedDeliveryDate"]}'),
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.primaryColor),
+                                      ),
+                                    ]),
+                              ],
                             ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Courier',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                              color: const Color.fromARGB(0, 255, 255, 255),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColor.lightdark)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: [
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Payment Methods',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["paymentMethod"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.lightdark),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Trackign ID',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["trackingId"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Shipping Method',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["shipmentType"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Status',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Container(
+                                        alignment: Alignment.center,
+                                        width: 100,
+                                        height: 25,
+                                        decoration: BoxDecoration(
+                                            color: const Color(0xffFFF6E0),
+                                            borderRadius:
+                                                BorderRadius.circular(20)),
+                                        child: Text(
+                                          '${receipt["state"]}',
+                                          style: AppTextStyle.body(
+                                              size: 14,
+                                              color: const Color(0xffFFBE4C),
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ]),
+                              ],
                             ),
-                            Text(
-                              '${receipt["shipmentFee"]["pickupFee"]}',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          decoration: BoxDecoration(
+                              color: const Color.fromARGB(0, 255, 255, 255),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: AppColor.lightdark)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Column(
+                              children: [
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Package',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["shipmentFee"]["freightFee"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Courier',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["shipmentFee"]["pickupFee"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Insurance',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["shipmentFee"]["insuranceFee"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 15),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Destination Duty Fee',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '0.00',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                    ]),
+                                const SizedBox(height: 25),
+                                Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        'Total',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            color: AppColor.lightdark),
+                                      ),
+                                      Text(
+                                        '${receipt["totalAmount"]}',
+                                        style: AppTextStyle.body(
+                                            size: 14,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColor.primaryColor),
+                                      ),
+                                    ]),
+                              ],
                             ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Insurance',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["shipmentFee"]["insuranceFee"]}',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
-                            ),
-                          ]),
-                      const SizedBox(height: 15),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Destination Duty Fee',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '0.00',
-                              style: AppTextStyle.body(
-                                  size: 14, fontWeight: FontWeight.w500),
-                            ),
-                          ]),
-                      const SizedBox(height: 25),
-                      Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Total',
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                            ),
-                            Text(
-                              '${receipt["totalAmount"]}',
-                              style: AppTextStyle.body(
-                                  size: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColor.primaryColor),
-                            ),
-                          ]),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              Image(image: AssetImage(AppImages.barcode)),
-              Text(
-                '${receipt["trackingId"]}',
-                style: AppTextStyle.body(size: 14),
-              ),
-              const SizedBox(height: 50),
-              AppButton(title: 'Download PDF', onTap: (){}),
-              const SizedBox(height: 20)
-            ],
-          ),
-        ),
+                          ),
+                        ),
+                        const SizedBox(height: 15),
+                        Image(image: AssetImage(AppImages.barcode)),
+                        Text(
+                          '${receipt["trackingId"]}',
+                          style: AppTextStyle.body(size: 14),
+                        ),
+                        const SizedBox(height: 50),
+                        AppButton(title: 'Download PDF', onTap: () {}),
+                        const SizedBox(height: 20)
+                      ],
+                    ));
+              },
+            ),
       ),
-    );
+      // if (isLoading)
+      //   Container(
+      //     color: Colors.black.withOpacity(0.5),
+      //     child: const Center(
+      //       child: CircularProgressIndicator(
+      //         color: AppColor.primaryColor,
+      //       ),
+      //     ),
+      //   ),
+    ]));
   }
 }

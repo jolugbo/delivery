@@ -42,66 +42,65 @@ class _CreateAccountState extends State<CreateAccount> {
 
   Future<void> registerUser(AuthProvider authProvider) async {
     if (_formKey.currentState?.validate() ?? false) {
-      bool hasInternet = await HelperClass().hasInternetConnection();
-      if (hasInternet) {
+      // bool hasInternet = await HelperClass().hasInternetConnection();
+      // if (hasInternet) {
+      setState(() {
+        isLoading = true;
+      });
+      try {
+        final response = await authProvider.signup(
+            firstName: firstNameController.text,
+            lastName: lastNameController.text,
+            phoneNumber: phoneController.text,
+            email: emailController.text,
+            gender: gender[0],
+            dateOfBirth: dobController.text,
+            confirmPassword: cpasswordController.text,
+            username: userNameController.text,
+            category: category,
+            //accountType: "Customer",
+            password: passwordEditingController.text);
         setState(() {
-          isLoading = true;
+          isLoading = false;
         });
-        try {
-          final response = await authProvider.signup(
-              firstName: firstNameController.text,
-              lastName: lastNameController.text,
-              phoneNumber: phoneController.text,
-              email: emailController.text,
-              gender: gender[0],
-              dateOfBirth: dobController.text,
-              confirmPassword: cpasswordController.text,
-              username: userNameController.text,
-              category: category,
-              //accountType: "Customer",
-              password: passwordEditingController.text);
-          setState(() {
-            isLoading = false;
-          });
 
-          if (response['success']) {
-            log("Signup successful: ${response['data']} ${response["data"]["resultData"]["id"]}");
-            log("${response["data"]["resultData"]["id"]}");
-            print(
-                "Signup successful: ${response['data']} ${response["data"]["resultData"]["id"]}");
-            print("${response["data"]["resultData"]["id"]}");
-            // Navigate to another screen or show success message
-            final secureStorage = Encryptor();
+        if (response['success']) {
+          log("Signup successful: ${response['data']} ${response["data"]["resultData"]["id"]}");
+          log("${response["data"]["resultData"]["id"]}");
+          print(
+              "Signup successful: ${response['data']} ${response["data"]["resultData"]["id"]}");
+          print("${response["data"]["resultData"]["id"]}");
+          // Navigate to another screen or show success message
+          final secureStorage = Encryptor();
 
-            // Save data
-            await secureStorage.saveData(
-                'token', passwordEditingController.text);
-            await secureStorage.saveData('username', userNameController.text);
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => VerifyPage(
-                          email: emailController.text,
-                          phone: phoneController.text,
-                          userId: response["data"]["resultData"]["id"],
-                        )));
-          } else {
-            print("Signup failed: ${response["data"]['message']}");
-            CustomSnackbar.showError(
-                context, response['data']["message"] ?? response['message']);
-          }
-        } catch (exception) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-                content: Text("connection issues. Please try again later.")),
-          );
+          // Save data
+          await secureStorage.saveData('token', passwordEditingController.text);
+          await secureStorage.saveData('username', userNameController.text);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => VerifyPage(
+                        email: emailController.text,
+                        phone: phoneController.text,
+                        userId: response["data"]["resultData"]["id"],
+                      )));
+        } else {
+          print("Signup failed: ${response["data"]['message']}");
+          CustomSnackbar.showError(
+              context, response['data']["message"] ?? response['message']);
         }
-      } else {
+      } catch (exception) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-              content: Text('No internet connection. Please try again later.')),
+              content: Text("connection issues. Please try again later.")),
         );
       }
+      // } else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(
+      //         content: Text('No internet connection. Please try again later.')),
+      //   );
+      // }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Invalid Form Input.')),
@@ -264,6 +263,8 @@ class _CreateAccountState extends State<CreateAccount> {
                           }
                           return null;
                         },
+                        style: AppTextStyle.body(
+                            fontWeight: FontWeight.bold, size: 15),
                         hint: Text(
                           'Select category',
                           style: AppTextStyle.body(size: 14),
@@ -284,7 +285,8 @@ class _CreateAccountState extends State<CreateAccount> {
                             value: value,
                             child: Text(
                               value,
-                              style: AppTextStyle.body(size: 14),
+                            style: AppTextStyle.body(
+                                fontWeight: FontWeight.bold, size: 15),
                             ),
                           );
                         }).toList(),
@@ -307,6 +309,8 @@ class _CreateAccountState extends State<CreateAccount> {
                         }
                         return null;
                       },
+                      style: AppTextStyle.body(
+                          fontWeight: FontWeight.bold, size: 15),
                       hint: Text(
                         'Select gender',
                         style: AppTextStyle.body(size: 14),
@@ -326,7 +330,8 @@ class _CreateAccountState extends State<CreateAccount> {
                           value: value,
                           child: Text(
                             value,
-                            style: AppTextStyle.body(size: 14),
+                            style: AppTextStyle.body(
+                                fontWeight: FontWeight.bold, size: 15),
                           ),
                         );
                       }).toList(),
@@ -347,19 +352,6 @@ class _CreateAccountState extends State<CreateAccount> {
                         if (value == null || value.isEmpty) {
                           return 'Date of Birth cannot be empty';
                         }
-                        //try {
-                        //   final dob = DateTime.parse(value);
-                        //   final currentDate = DateTime.now();
-                        //   final minDate = DateTime(currentDate.year - 18,
-                        //       currentDate.month, currentDate.day);
-                        //   if (dob.isAfter(currentDate)) {
-                        //     return 'Date of Birth cannot be in the future';
-                        //   } else if (dob.isAfter(minDate)) {
-                        //     return 'You must be at least 18 years old';
-                        //   }
-                        // } catch (e) {
-                        //   return 'Invalid date format';
-                        // }
                         return null;
                       },
                       hint: 'Enter D.O.B',
@@ -449,7 +441,8 @@ class _CreateAccountState extends State<CreateAccount> {
                                   Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) => const WelcomeBack()));
+                                          builder: (context) =>
+                                              const WelcomeBack()));
                                 },
                               style: AppTextStyle.body(
                                   fontWeight: FontWeight.bold,

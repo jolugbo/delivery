@@ -102,6 +102,8 @@ class _SecurityQuestionState extends State<SecurityQuestion> {
                   'Select Question',
                   style: AppTextStyle.body(size: 14),
                 ),
+                    style: AppTextStyle.body(
+                          fontWeight: FontWeight.bold, size: 15),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(
@@ -114,7 +116,8 @@ class _SecurityQuestionState extends State<SecurityQuestion> {
                     value: question["id"],
                     child: Text(
                       question["question"],
-                      style: AppTextStyle.body(size: 14),
+                    style: AppTextStyle.body(
+                          fontWeight: FontWeight.bold, size: 15),
                     ),
                   );
                 }).toList(),

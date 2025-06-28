@@ -101,7 +101,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Function to fetch Shipment Types
+  /// Function to fetch Item Category
   Future<Map<String, dynamic>> fetchItemCategory(
       {required String token}) async {
     final String endpoint =
@@ -149,7 +149,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Function to fetch Shipment Types
+  /// Function to fetch Item SubCategory
   Future<Map<String, dynamic>> fetchItemSubCategory(
       {required String token, required String code}) async {
     final String endpoint = "$_baseUrl/shipment/itemcategory/3304";
@@ -196,7 +196,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Function to request a confirmation token
+  /// Function to get Courier
   Future<Map<String, dynamic>> getCourier({
     required dynamic couriersRequest,
     required String token,
@@ -241,7 +241,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
- /// Function to request a confirmation token
+ /// Function to get Estimates
   Future<Map<String, dynamic>> getEstimates({
     required dynamic estimateRequest,
     required String token,
@@ -254,6 +254,7 @@ class DeliveryProvider with ChangeNotifier {
       'Authorization': 'Bearer $token',
     };
     try {
+      print("got here............$estimateRequest");
       // Send the POST request
       final response = await http.post(
         Uri.parse(endpoint),
@@ -268,11 +269,11 @@ class DeliveryProvider with ChangeNotifier {
           "data": jsonDecode(response.body)["resultData"],
         };
       } else {
-        print("Error: ${jsonDecode(response.body)}");
+        print("Error: ${jsonDecode(response.body)["message"]}");
         return {
           "success": false,
-          "message": "Failed to get estimates",
-          "data": jsonDecode(response.body),
+          "message":  jsonDecode(response.body)["message"],
+          "data": "Failed to get estimates",
         };
       }
     } catch (e) {
@@ -285,7 +286,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
- /// Function to request a confirmation token
+ /// Function to create Order
   Future<Map<String, dynamic>> createOrder({
     required dynamic orderRequest,
     required String token,
@@ -315,8 +316,7 @@ class DeliveryProvider with ChangeNotifier {
         print("Error: ${jsonDecode(response.body)}");
         return {
           "success": false,
-          "message": "Failed to get estimates",
-          "data": jsonDecode(response.body),
+          "message": jsonDecode(response.body)["message"],
         };
       }
     } catch (e) {
@@ -329,7 +329,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
- /// Function to request a confirmation token
+ /// Function to create payment
   Future<Map<String, dynamic>> createpayment({
     required dynamic paymentRequest,
     required String token,
@@ -373,7 +373,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
- /// Function to request a confirmation token
+ /// Function to confirm payment
   Future<Map<String, dynamic>> confirmpayment({
     required dynamic paymentRequest,
     required String token,
@@ -417,7 +417,7 @@ class DeliveryProvider with ChangeNotifier {
     }
   }
 
-  /// Function to fetch Shipment Category
+  /// Function to fetch Receipt
   Future<Map<String, dynamic>> fetchReceipt({required String token,required String orderNo}) async {
     final String endpoint =
         "$_baseUrl/shipment/order/$orderNo/receipt";

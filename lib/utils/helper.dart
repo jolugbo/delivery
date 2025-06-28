@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:gt_delivery/constant/app_color.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,14 +7,14 @@ import 'package:image_picker/image_picker.dart';
 class HelperClass {
   final ImagePicker _picker = ImagePicker();
 
-  Future<bool> hasInternetConnection() async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult == ConnectivityResult.mobile ||
-        connectivityResult == ConnectivityResult.wifi) {
-      return true; // Internet connection exists
-    }
-    return false; // No internet connection
-  }
+  // Future<bool> hasInternetConnection() async {
+  //   var connectivityResult = await Connectivity().checkConnectivity();
+  //   if (connectivityResult == ConnectivityResult.mobile ||
+  //       connectivityResult == ConnectivityResult.wifi) {
+  //     return true; // Internet connection exists
+  //   }
+  //   return false; // No internet connection
+  // }
 
   Future<File?> _pickImage(ImageSource source) async {
     File? doc;

@@ -6,7 +6,6 @@ import 'package:gt_delivery/constant/app_images.dart';
 import 'package:gt_delivery/modules/home/delivery_details.dart';
 import 'package:gt_delivery/modules/new_shipment/new_shipment.dart';
 import 'package:gt_delivery/utils/textstyles/text_styles.dart';
-import 'package:gt_delivery/utils/encryptor.dart';
 
 class Home extends StatefulWidget {
   final token;
@@ -77,10 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // Function to load data from secure storage
   Future<void> _loadData() async {
-    final Encryptor secureStorageService = Encryptor();
-    String? userName = await secureStorageService.getData('username');
-    //String? userName = await _secureStorageService.getData("userName");
-    //String? id = await _secureStorageService.getData('id');
     print("value of data is  ${widget.userId}");
     setState(() {
       username = widget.userId ?? "Loading...";
@@ -209,283 +204,283 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const DeliveryDetails()));
-              },
-              child: Container(
-                width: double.infinity,
-                height: 150,
-                decoration: BoxDecoration(
-                    border: Border.all(color: AppColor.lightgrey),
-                    borderRadius: BorderRadius.circular(10)),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          height: 60,
-                          width: 60,
-                          decoration: BoxDecoration(
-                              color: const Color(0xffFEECED),
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Image(image: AssetImage(AppImages.box)),
-                        ),
-                        const SizedBox(width: 20),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'FLX7823899',
-                              style: AppTextStyle.body(
-                                  fontWeight: FontWeight.w600, size: 16),
-                            ),
-                            Text(
-                              'Service Center',
-                              style: AppTextStyle.body(size: 14),
-                            ),
-                            Text(
-                              'Express Delivery',
-                              style: AppTextStyle.body(size: 14),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 30),
-                        Container(
-                          alignment: Alignment.center,
-                          height: 30,
-                          width: 100,
-                          decoration: BoxDecoration(
-                              color: const Color(0xffFFF6E0),
-                              borderRadius: BorderRadius.circular(15)),
-                          child: Text(
-                            'In Progress',
-                            style: AppTextStyle.body(
-                                size: 14,
-                                color: const Color(0xffFFBE4C),
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          alignment: Alignment.center,
-                          height: 35,
-                          width: 320,
-                          decoration: BoxDecoration(
-                              color: AppColor.primaryColor,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: Text(
-                            'Track',
-                            style: AppTextStyle.body(
-                                size: 15,
-                                color: AppColor.white,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                  border: Border.all(color: AppColor.lightgrey),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: 60,
-                        width: 60,
-                        decoration: BoxDecoration(
-                            color: const Color(0xffFEECED),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Image(image: AssetImage(AppImages.box)),
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'FLX7823899',
-                            style: AppTextStyle.body(
-                                fontWeight: FontWeight.w600, size: 16),
-                          ),
-                          Text(
-                            'Service Center',
-                            style: AppTextStyle.body(size: 14),
-                          ),
-                          Text(
-                            'Express Delivery',
-                            style: AppTextStyle.body(size: 14),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      Container(
-                        alignment: Alignment.center,
-                        height: 30,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            color: const Color(0xffFFF6E0),
-                            borderRadius: BorderRadius.circular(15)),
-                        child: Text(
-                          'In Progress',
-                          style: AppTextStyle.body(
-                              size: 14,
-                              color: const Color(0xffFFBE4C),
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        alignment: Alignment.center,
-                        height: 35,
-                        width: 160,
-                        decoration: BoxDecoration(
-                            border: Border.all(color: AppColor.grey),
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          'Make Payment',
-                          style: AppTextStyle.body(
-                              size: 14,
-                              color: AppColor.black,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Container(
-                        alignment: Alignment.center,
-                        height: 35,
-                        width: 160,
-                        decoration: BoxDecoration(
-                            color: AppColor.primaryColor,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          'Track',
-                          style: AppTextStyle.body(
-                              size: 15,
-                              color: AppColor.white,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              width: double.infinity,
-              height: 150,
-              decoration: BoxDecoration(
-                  border: Border.all(color: AppColor.lightgrey),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        height: 60,
-                        width: 60,
-                        decoration: BoxDecoration(
-                            color: const Color(0xffFEECED),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Image(image: AssetImage(AppImages.box)),
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'FLX7823899',
-                            style: AppTextStyle.body(
-                                fontWeight: FontWeight.w600, size: 16),
-                          ),
-                          Text(
-                            'Service Center',
-                            style: AppTextStyle.body(size: 14),
-                          ),
-                          Text(
-                            'Express Delivery',
-                            style: AppTextStyle.body(size: 14),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(width: 30),
-                      Container(
-                        alignment: Alignment.center,
-                        height: 30,
-                        width: 100,
-                        decoration: BoxDecoration(
-                            color: const Color(0xffFFF6E0),
-                            borderRadius: BorderRadius.circular(15)),
-                        child: Text(
-                          'In Progress',
-                          style: AppTextStyle.body(
-                              size: 14,
-                              color: const Color(0xffFFBE4C),
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        alignment: Alignment.center,
-                        height: 35,
-                        width: 320,
-                        decoration: BoxDecoration(
-                            color: AppColor.primaryColor,
-                            borderRadius: BorderRadius.circular(20)),
-                        child: Text(
-                          'Track',
-                          style: AppTextStyle.body(
-                              size: 15,
-                              color: AppColor.white,
-                              fontWeight: FontWeight.w500),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 50)
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: GestureDetector(
+          //     onTap: () {
+          //       Navigator.push(context,
+          //           MaterialPageRoute(builder: (context) => const DeliveryDetails()));
+          //     },
+          //     child: Container(
+          //       width: double.infinity,
+          //       height: 150,
+          //       decoration: BoxDecoration(
+          //           border: Border.all(color: AppColor.lightgrey),
+          //           borderRadius: BorderRadius.circular(10)),
+          //       child: Column(
+          //         children: [
+          //           const SizedBox(height: 10),
+          //           Row(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: [
+          //               Container(
+          //                 height: 60,
+          //                 width: 60,
+          //                 decoration: BoxDecoration(
+          //                     color: const Color(0xffFEECED),
+          //                     borderRadius: BorderRadius.circular(8)),
+          //                 child: Image(image: AssetImage(AppImages.box)),
+          //               ),
+          //               const SizedBox(width: 20),
+          //               Column(
+          //                 crossAxisAlignment: CrossAxisAlignment.start,
+          //                 children: [
+          //                   Text(
+          //                     'FLX7823899',
+          //                     style: AppTextStyle.body(
+          //                         fontWeight: FontWeight.w600, size: 16),
+          //                   ),
+          //                   Text(
+          //                     'Service Center',
+          //                     style: AppTextStyle.body(size: 14),
+          //                   ),
+          //                   Text(
+          //                     'Express Delivery',
+          //                     style: AppTextStyle.body(size: 14),
+          //                   ),
+          //                 ],
+          //               ),
+          //               const SizedBox(width: 30),
+          //               Container(
+          //                 alignment: Alignment.center,
+          //                 height: 30,
+          //                 width: 100,
+          //                 decoration: BoxDecoration(
+          //                     color: const Color(0xffFFF6E0),
+          //                     borderRadius: BorderRadius.circular(15)),
+          //                 child: Text(
+          //                   'In Progress',
+          //                   style: AppTextStyle.body(
+          //                       size: 14,
+          //                       color: const Color(0xffFFBE4C),
+          //                       fontWeight: FontWeight.w500),
+          //                 ),
+          //               ),
+          //             ],
+          //           ),
+          //           const SizedBox(height: 18),
+          //           Row(
+          //             mainAxisAlignment: MainAxisAlignment.center,
+          //             children: [
+          //               Container(
+          //                 alignment: Alignment.center,
+          //                 height: 35,
+          //                 width: 320,
+          //                 decoration: BoxDecoration(
+          //                     color: AppColor.primaryColor,
+          //                     borderRadius: BorderRadius.circular(20)),
+          //                 child: Text(
+          //                   'Track',
+          //                   style: AppTextStyle.body(
+          //                       size: 15,
+          //                       color: AppColor.white,
+          //                       fontWeight: FontWeight.w500),
+          //                 ),
+          //               ),
+          //             ],
+          //           )
+          //         ],
+          //       ),
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 10),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: Container(
+          //     width: double.infinity,
+          //     height: 150,
+          //     decoration: BoxDecoration(
+          //         border: Border.all(color: AppColor.lightgrey),
+          //         borderRadius: BorderRadius.circular(10)),
+          //     child: Column(
+          //       children: [
+          //         const SizedBox(height: 10),
+          //         Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             Container(
+          //               height: 60,
+          //               width: 60,
+          //               decoration: BoxDecoration(
+          //                   color: const Color(0xffFEECED),
+          //                   borderRadius: BorderRadius.circular(8)),
+          //               child: Image(image: AssetImage(AppImages.box)),
+          //             ),
+          //             const SizedBox(width: 20),
+          //             Column(
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          //                 Text(
+          //                   'FLX7823899',
+          //                   style: AppTextStyle.body(
+          //                       fontWeight: FontWeight.w600, size: 16),
+          //                 ),
+          //                 Text(
+          //                   'Service Center',
+          //                   style: AppTextStyle.body(size: 14),
+          //                 ),
+          //                 Text(
+          //                   'Express Delivery',
+          //                   style: AppTextStyle.body(size: 14),
+          //                 ),
+          //               ],
+          //             ),
+          //             const SizedBox(width: 30),
+          //             Container(
+          //               alignment: Alignment.center,
+          //               height: 30,
+          //               width: 100,
+          //               decoration: BoxDecoration(
+          //                   color: const Color(0xffFFF6E0),
+          //                   borderRadius: BorderRadius.circular(15)),
+          //               child: Text(
+          //                 'In Progress',
+          //                 style: AppTextStyle.body(
+          //                     size: 14,
+          //                     color: const Color(0xffFFBE4C),
+          //                     fontWeight: FontWeight.w500),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //         const SizedBox(height: 18),
+          //         Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             Container(
+          //               alignment: Alignment.center,
+          //               height: 35,
+          //               width: 160,
+          //               decoration: BoxDecoration(
+          //                   border: Border.all(color: AppColor.grey),
+          //                   borderRadius: BorderRadius.circular(20)),
+          //               child: Text(
+          //                 'Make Payment',
+          //                 style: AppTextStyle.body(
+          //                     size: 14,
+          //                     color: AppColor.black,
+          //                     fontWeight: FontWeight.w500),
+          //               ),
+          //             ),
+          //             const SizedBox(width: 10),
+          //             Container(
+          //               alignment: Alignment.center,
+          //               height: 35,
+          //               width: 160,
+          //               decoration: BoxDecoration(
+          //                   color: AppColor.primaryColor,
+          //                   borderRadius: BorderRadius.circular(20)),
+          //               child: Text(
+          //                 'Track',
+          //                 style: AppTextStyle.body(
+          //                     size: 15,
+          //                     color: AppColor.white,
+          //                     fontWeight: FontWeight.w500),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 10),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20),
+          //   child: Container(
+          //     width: double.infinity,
+          //     height: 150,
+          //     decoration: BoxDecoration(
+          //         border: Border.all(color: AppColor.lightgrey),
+          //         borderRadius: BorderRadius.circular(10)),
+          //     child: Column(
+          //       children: [
+          //         const SizedBox(height: 10),
+          //         Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             Container(
+          //               height: 60,
+          //               width: 60,
+          //               decoration: BoxDecoration(
+          //                   color: const Color(0xffFEECED),
+          //                   borderRadius: BorderRadius.circular(8)),
+          //               child: Image(image: AssetImage(AppImages.box)),
+          //             ),
+          //             const SizedBox(width: 20),
+          //             Column(
+          //               crossAxisAlignment: CrossAxisAlignment.start,
+          //               children: [
+          //                 Text(
+          //                   'FLX7823899',
+          //                   style: AppTextStyle.body(
+          //                       fontWeight: FontWeight.w600, size: 16),
+          //                 ),
+          //                 Text(
+          //                   'Service Center',
+          //                   style: AppTextStyle.body(size: 14),
+          //                 ),
+          //                 Text(
+          //                   'Express Delivery',
+          //                   style: AppTextStyle.body(size: 14),
+          //                 ),
+          //               ],
+          //             ),
+          //             const SizedBox(width: 30),
+          //             Container(
+          //               alignment: Alignment.center,
+          //               height: 30,
+          //               width: 100,
+          //               decoration: BoxDecoration(
+          //                   color: const Color(0xffFFF6E0),
+          //                   borderRadius: BorderRadius.circular(15)),
+          //               child: Text(
+          //                 'In Progress',
+          //                 style: AppTextStyle.body(
+          //                     size: 14,
+          //                     color: const Color(0xffFFBE4C),
+          //                     fontWeight: FontWeight.w500),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //         const SizedBox(height: 18),
+          //         Row(
+          //           mainAxisAlignment: MainAxisAlignment.center,
+          //           children: [
+          //             Container(
+          //               alignment: Alignment.center,
+          //               height: 35,
+          //               width: 320,
+          //               decoration: BoxDecoration(
+          //                   color: AppColor.primaryColor,
+          //                   borderRadius: BorderRadius.circular(20)),
+          //               child: Text(
+          //                 'Track',
+          //                 style: AppTextStyle.body(
+          //                     size: 15,
+          //                     color: AppColor.white,
+          //                     fontWeight: FontWeight.w500),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 50)
         ],
       ),
     );

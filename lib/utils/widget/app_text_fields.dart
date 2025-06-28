@@ -40,7 +40,7 @@ class _AppTextFieldsState extends State<AppTextFields> {
       onTap: widget.onTab,
       keyboardType: widget.keyboardType,
       obscureText: widget.isPassword && !_isPasswordVisible,
-      style: AppTextStyle.body(fontWeight: FontWeight.normal, size: 12),
+      style: AppTextStyle.body(fontWeight: FontWeight.bold, size: 15),
       validator: widget.validator, // Use the validator
       readOnly: widget.isReadOnly,
       decoration: InputDecoration(

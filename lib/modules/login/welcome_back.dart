@@ -1,6 +1,5 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:gt_delivery/constant/app_color.dart';
 import 'package:gt_delivery/constant/app_images.dart';
 import 'package:gt_delivery/core/custom_snackbar.dart';
@@ -9,8 +8,6 @@ import 'package:gt_delivery/modules/forgot_password/forgot_password.dart';
 import 'package:gt_delivery/modules/home/home.dart';
 import 'package:gt_delivery/provider/auth_provider.dart';
 import 'package:gt_delivery/utils/textstyles/text_styles.dart';
-import 'package:gt_delivery/utils/encryptor.dart';
-import 'package:gt_delivery/utils/helper.dart';
 import 'package:gt_delivery/utils/widget/app_button.dart';
 import 'package:gt_delivery/utils/widget/app_text_fields.dart';
 import 'package:gt_delivery/utils/widget/back_button.dart';
@@ -37,31 +34,20 @@ class _WelcomeBackState extends State<WelcomeBack> {
   }
 
   Future<void> loginUser(AuthProvider authProvider) async {
-    //if (isFormValid) {
-    bool hasInternet = await HelperClass().hasInternetConnection();
-    if (hasInternet) {
+    if (isFormValid) {
       setState(() {
         isLoading = true;
       }); 
 
       final response = await authProvider.login(
-          usernameOrPhoneNumber: emailController.text, //"usr1",
-          password: passwordController.text); //"@Ssess123");
+          usernameOrPhoneNumber: emailController.text, //"usr1",//
+          password: passwordController.text); //"@Ssess123");//
 
       setState(() {
         isLoading = false;
       });
 
       if (response['success']) {
-        final secureStorage = Encryptor();
-        await const FlutterSecureStorage().deleteAll();
-
-        // Retrieve data
-        //String? username = await secureStorage.getData('username');
-        await secureStorage.saveData(
-            "key", response["data"]["resultData"]["accessToken"]);
-        await secureStorage.saveData(
-            "username", response["data"]["resultData"]["userName"]);
         Navigator.push(
             context,
             MaterialPageRoute(
@@ -74,18 +60,12 @@ class _WelcomeBackState extends State<WelcomeBack> {
         CustomSnackbar.showError(
             context, response['data']["message"] ?? response['message']);
       }
-    } else {
+    }
+    else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('No internet connection. Please try again later.')),
+        const SnackBar(content: Text('Invalid Form Input.')),
       );
     }
-    //}
-    // else {
-    //   ScaffoldMessenger.of(context).showSnackBar(
-    //     const SnackBar(content: Text('Invalid Form Input.')),
-    //   );
-    // }
   }
 
   @override

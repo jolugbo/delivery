@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:gt_delivery/constant/app_color.dart';
-import 'package:gt_delivery/modules/new_shipment/pickup_information.dart';
 import 'package:gt_delivery/utils/textstyles/text_styles.dart';
 import 'package:gt_delivery/utils/widget/app_button.dart';
 import 'package:gt_delivery/utils/widget/back_button.dart';
@@ -111,12 +110,12 @@ class _TermsOfServiceState extends State<TermsOfService> {
               AppButton(
                   title: 'Continue',
                   onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => PickupInformation(
-                                  shippingType: widget.shippingType,
-                                )));
+                    // Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //         builder: (context) => PickupInformation(
+                    //               shippingType: widget.shippingType,
+                    //             )));
                   }),
               const SizedBox(height: 30),
             ],

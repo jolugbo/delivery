@@ -43,7 +43,7 @@ class ItemButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         child: Container(
           width: double.infinity,
-          height: 90,
+          height: 100,
           decoration: BoxDecoration(
               border: Border.all(
                   color: isActive ? AppColor.primaryColor : AppColor.lightgrey),
@@ -70,17 +70,29 @@ class ItemButton extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 15),
-                      Text(
-                        title,
-                        style: AppTextStyle.body(fontWeight: FontWeight.bold),
+                      Container(
+                        width: size.width * 0.5,
+                        child: Text(
+                          title,
+                          style: AppTextStyle.body(
+                              fontWeight: FontWeight.bold,
+                              size: 16,
+                              color: AppColor.dark),
+                        ),
                       ),
                       const SizedBox(height: 3),
-                     Text(
-                             subtitle.length > 30 ? "${subtitle.substring(0, 30)}..." : subtitle,
-                              style: AppTextStyle.body(
-                                  size: 14, color: AppColor.lightdark),
-                             // softWrap: true,
-                            ),
+                      Container(
+                        width: size.width * 0.5,
+                        child: Text(
+                          subtitle,
+                          style: AppTextStyle.body(
+                              size: 15,
+                              fontWeight: FontWeight.normal,
+                              color: AppColor.dark),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -92,7 +104,7 @@ class ItemButton extends StatelessWidget {
                   style: AppTextStyle.body(
                       size: 14,
                       color: AppColor.primaryColor,
-                      fontWeight: FontWeight.w500),
+                      fontWeight: FontWeight.w700),
                 ),
               ),
             ],

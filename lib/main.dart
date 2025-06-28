@@ -40,3 +40,12 @@ class MyApp extends StatelessWidget {
         });
   }
 }
+
+
+//remove the internet check (done)
+
+//change the font design Size(done)
+
+//let keyboard go to the bottom of the form
+
+//take out items in the dashboard(done)

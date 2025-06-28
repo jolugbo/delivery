@@ -8,7 +8,6 @@ import 'package:gt_delivery/utils/widget/app_button.dart';
 import 'package:gt_delivery/utils/widget/back_button.dart';
 import 'package:gt_delivery/utils/widget/custom_browser.dart';
 import 'package:provider/provider.dart';
-import 'package:uni_links3/uni_links.dart';
 
 class Payment extends StatefulWidget {
   final token;
@@ -82,15 +81,7 @@ class _PaymentState extends State<Payment> {
     }
   }
 
-  void _handleIncomingLinks() async {
-    linkStream.listen((String? link) {
-      if (link != null && link.contains("payment-success")) {
-        // parse query params if needed
-        print("Payment success URL received: $link");
-        // navigate to success page or show confirmation
-      }
-    });
-  }
+
 
   Widget rowItem(String title, String value,
       {Color? color, FontWeight? fontWeight}) {

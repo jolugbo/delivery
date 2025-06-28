@@ -5,6 +5,7 @@ class AppImages {
   static String walkthrough2 = "$imagePath/walkthrough2.png";
   static String walkthrough3 = "$imagePath/walkthrough3.png";
   static String mail = "$imagePath/mail.png";
+  static String sms = "$imagePath/sms.png";
   static String vector = "$imagePath/vector.png";
   static String apple = "$imagePath/apple.png";
   static String fingers = "$imagePath/fingers.png";
@@ -28,6 +29,8 @@ class AppImages {
   static String map = "$imagePath/map.png";
   static String mappin = "$imagePath/mappin.png";
   static String world = "$imagePath/world.png";
+  static String intra = "$imagePath/intra.png";
+  static String inter = "$imagePath/inter.png";
   static String bowl = "$imagePath/bowl.png";
   static String car = "$imagePath/car.png";
   static String truck = "$imagePath/mappin.png";

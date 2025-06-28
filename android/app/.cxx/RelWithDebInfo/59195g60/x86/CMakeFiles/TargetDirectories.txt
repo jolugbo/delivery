@@ -1,0 +1,2 @@
+C:/Projects/GTDeliveries-main/GTDeliveries-main/android/app/.cxx/RelWithDebInfo/59195g60/x86/CMakeFiles/edit_cache.dir
+C:/Projects/GTDeliveries-main/GTDeliveries-main/android/app/.cxx/RelWithDebInfo/59195g60/x86/CMakeFiles/rebuild_cache.dir

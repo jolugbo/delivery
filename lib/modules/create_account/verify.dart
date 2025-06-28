@@ -71,13 +71,15 @@ class _VerifyPageState extends State<VerifyPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    var size = MediaQuery.of(context).size;
 
     return Scaffold(
         body: Stack(
             //overflow: Overflow.visible,
             children: <Widget>[
-          Padding(
+          Container(
             padding: const EdgeInsets.symmetric(horizontal: 20),
+            height: size.height * 0.9,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -110,7 +112,7 @@ class _VerifyPageState extends State<VerifyPage> {
                     }),
                 const SizedBox(height: 25),
                 ItemButton(
-                    imagePath: AppImages.mail,
+                    imagePath: AppImages.sms,
                     title: 'SMS',
                     subtitle: 'To verify via Phone number',
                     isActive: channel == "SMS",
@@ -134,7 +136,7 @@ class _VerifyPageState extends State<VerifyPage> {
                       text: TextSpan(
                         text: 'By registering you agree to \n',
                         style:
-                            AppTextStyle.body(color: AppColor.grey, size: 14),
+                            AppTextStyle.body(color: AppColor.lightdark, size: 14),
                         children: [
                           TextSpan(
                             text: 'Terms &  Conditions ',
@@ -146,7 +148,7 @@ class _VerifyPageState extends State<VerifyPage> {
                           TextSpan(
                               text: 'and ',
                               style: AppTextStyle.body(
-                                  color: AppColor.grey, size: 14)),
+                                  color: AppColor.lightdark, size: 14)),
                           TextSpan(
                             text: 'Privacy Policy',
                             style: AppTextStyle.body(

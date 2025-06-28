@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:gt_delivery/core/custom_snackbar.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -52,7 +53,8 @@ class _NewShipmentState extends State<NewShipment> {
   final TextEditingController itemNameController = TextEditingController();
   final TextEditingController valueController = TextEditingController();
   final TextEditingController colorController = TextEditingController();
-  final TextEditingController textController = TextEditingController();
+  final TextEditingController materialController = TextEditingController();
+  final TextEditingController useController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final String googleApiKey = "AIzaSyBZr_teD3IuoXYHppZv9M6fkvA4UZZjY-0";
@@ -105,6 +107,7 @@ class _NewShipmentState extends State<NewShipment> {
   dynamic locationCoordinates = {};
   String fetchedCity = "";
   String courierShippingType = "";
+  String destinationLocationCode = "";
 
   bool _validateInputs() {
     if (receiverNameController.text.trim().isEmpty) {
@@ -471,7 +474,7 @@ class _NewShipmentState extends State<NewShipment> {
     });
 
     setState(() {
-      orderRequest["destinationLocationCode"] = receiverCityController.text;
+      orderRequest["destinationLocationCode"] = destinationLocationCode;
       orderRequest["destinationLocation"] = {
         "addressLine": receiverAddressController.text,
         "city": fetchedCity,
@@ -591,14 +594,9 @@ class _NewShipmentState extends State<NewShipment> {
         newShipmentStep = 5;
         progressText = "Price Estimate";
       });
+    } else {
+      CustomSnackbar.showError(context, response["message"]);
     }
-    // estimateResponse = {"fees": [
-    //   {"routeCode": null,
-    //   "displayName": "GTD Inter State Latest Pricing",
-    //   "duration": 24,
-    //   "amount": 86400,
-    //   "deliveryPartnerCode": "GTD"}],
-    //   "insuranceFee": 0, "destinationDutyFee": 0}
   }
 
   Future<void> createOrder() async {
@@ -618,7 +616,7 @@ class _NewShipmentState extends State<NewShipment> {
 
     setState(() {
       isLoading = false;
-      //orderRequest[""] = 
+      //orderRequest[""] =
     });
     if (response["success"]) {
       response["data"]["email"] = emailController.text;
@@ -626,10 +624,9 @@ class _NewShipmentState extends State<NewShipment> {
           context,
           MaterialPageRoute(
               builder: (context) => Payment(
-                  token: widget.token, 
+                  token: widget.token,
                   paymentDetails: response["data"],
-                  orderRequest: orderRequest
-                  )));
+                  orderRequest: orderRequest)));
     }
   }
 
@@ -660,108 +657,132 @@ class _NewShipmentState extends State<NewShipment> {
     return showModalBottomSheet(
       isScrollControlled: true,
       context: context,
+      backgroundColor: Colors.transparent, // Optional: for a nicer modal look
       builder: (BuildContext context) {
         return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setModalState) {
-            return Container(
-              height: size.height * 0.8,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                  color: AppColor.white,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      topRight: Radius.circular(15))),
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        width: size.width * 0.3,
-                        height: 6.w,
-                        padding: const EdgeInsets.only(left: 0),
-                        margin: EdgeInsets.only(right: 12.w),
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: AppColor.lightdark,
-                          borderRadius: BorderRadius.circular(1000.r),
-                        ),
+            builder: (BuildContext context, StateSetter setModalState) {
+          return DraggableScrollableSheet(
+            initialChildSize: 0.8,
+            maxChildSize: 0.95,
+            minChildSize: 0.4,
+            expand: false,
+            builder: (context, scrollController) {
+              return Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom,
+                  ),
+                  child: SafeArea(
+                      child: Container(
+                    // padding: EdgeInsets.only(
+                    //   top: 10,
+                    //   left: 16,
+                    //   right: 16,
+                    //   bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                    // ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        'Add Item',
-                        style: AppTextStyle.body(
-                            fontWeight: FontWeight.bold, size: 20),
-                      ),
-                      const SizedBox(height: 5),
-                      Text(
-                        'Add Item to be shipped.',
-                        style: AppTextStyle.body(size: 14),
-                      ),
-                      const SizedBox(height: 15),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Form(
-                            key: _formKey,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                item_image(
-                                  onTap: () async {
-                                    var img = await HelperClass()
-                                        .showImageSourceSelector(context);
-                                    if (img != null) {
-                                      setModalState(() {
-                                        _itemImage = img;
-                                      });
-                                      File file = File(_itemImage!
-                                          .path); // Convert _itemImage to File
-                                      String fileName = file.uri.pathSegments
-                                          .last; // Extract the full file name
-                                      shortenedFileName = fileName.length > 10
-                                          ? fileName
-                                              .substring(fileName.length - 10)
-                                          : fileName; // Extract the file name
-                                      int fileSizeInByt = file
-                                          .lengthSync(); // Get the file size in bytes
-                                      fileSize = fileSizeInByt /
-                                          1024; // Convert to KB for readability
-                                    }
-                                  },
-                                  item: _itemImage != null
-                                      ? Container(
-                                          padding: const EdgeInsets.all(5),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceAround,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Image(
-                                                        image: FileImage(File(
-                                                            _itemImage!.path)),
-                                                        height: 80),
-                                                    SizedBox(
-                                                        width:
-                                                            size.width * 0.05),
-                                                    Column(
+                    ),
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 5),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            width: size.width * 0.3,
+                            height: 6.w,
+                            padding: const EdgeInsets.only(left: 0),
+                            margin: EdgeInsets.only(right: 12.w),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: AppColor.lightdark,
+                              borderRadius: BorderRadius.circular(1000.r),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Add Item',
+                            style: AppTextStyle.body(
+                                fontWeight: FontWeight.bold, size: 20),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            'Add Item to be shipped.',
+                            style: AppTextStyle.body(size: 14),
+                          ),
+                          const SizedBox(height: 15),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Form(
+                                key: _formKey,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    item_image(
+                                      onTap: () async {
+                                        var img = await HelperClass()
+                                            .showImageSourceSelector(context);
+                                        if (img != null) {
+                                          setModalState(() {
+                                            _itemImage = img;
+                                          });
+                                          File file = File(_itemImage!
+                                              .path); // Convert _itemImage to File
+                                          String fileName = file
+                                              .uri
+                                              .pathSegments
+                                              .last; // Extract the full file name
+                                          shortenedFileName = fileName.length >
+                                                  10
+                                              ? fileName.substring(
+                                                  fileName.length - 10)
+                                              : fileName; // Extract the file name
+                                          int fileSizeInByt = file
+                                              .lengthSync(); // Get the file size in bytes
+                                          fileSize = fileSizeInByt /
+                                              1024; // Convert to KB for readability
+                                        }
+                                      },
+                                      item: _itemImage != null
+                                          ? Container(
+                                              padding: const EdgeInsets.all(5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Row(
                                                       mainAxisAlignment:
                                                           MainAxisAlignment
-                                                              .center,
+                                                              .spaceAround,
                                                       crossAxisAlignment:
                                                           CrossAxisAlignment
-                                                              .start,
+                                                              .center,
                                                       children: [
-                                                        Text(
-                                                          shortenedFileName,
-                                                          style:
-                                                              AppTextStyle.body(
+                                                        Image(
+                                                            image: FileImage(
+                                                                File(_itemImage!
+                                                                    .path)),
+                                                            height: 80),
+                                                        SizedBox(
+                                                            width: size.width *
+                                                                0.05),
+                                                        Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              shortenedFileName,
+                                                              style: AppTextStyle.body(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w600,
@@ -769,433 +790,479 @@ class _NewShipmentState extends State<NewShipment> {
                                                                       AppColor
                                                                           .dark,
                                                                   size: 14),
-                                                        ),
-                                                        Text(
-                                                          "${fileSize.toStringAsFixed(2)} KB",
-                                                          style:
-                                                              AppTextStyle.body(
+                                                            ),
+                                                            Text(
+                                                              "${fileSize.toStringAsFixed(2)} KB",
+                                                              style: AppTextStyle.body(
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .w500,
                                                                   color: AppColor
                                                                       .lightdark,
                                                                   size: 12),
+                                                            ),
+                                                          ],
                                                         ),
-                                                      ],
-                                                    ),
-                                                  ]),
-                                              GestureDetector(
-                                                  onTap: () {
-                                                    setModalState(() {
-                                                      _itemImage = null;
-                                                    });
-                                                  },
-                                                  child: Container(
-                                                    height: 35,
-                                                    width: 35,
-                                                    decoration: BoxDecoration(
-                                                        shape: BoxShape.circle,
-                                                        color: AppColor.white,
-                                                        border: Border.all(
+                                                      ]),
+                                                  GestureDetector(
+                                                      onTap: () {
+                                                        setModalState(() {
+                                                          _itemImage = null;
+                                                        });
+                                                      },
+                                                      child: Container(
+                                                        height: 35,
+                                                        width: 35,
+                                                        decoration: BoxDecoration(
+                                                            shape:
+                                                                BoxShape.circle,
+                                                            color:
+                                                                AppColor.white,
+                                                            border: Border.all(
+                                                                color: AppColor
+                                                                    .white)),
+                                                        child: const Icon(
+                                                            Icons.cancel,
+                                                            size: 25,
                                                             color: AppColor
-                                                                .white)),
-                                                    child: const Icon(
-                                                        Icons.cancel,
-                                                        size: 25,
-                                                        color: AppColor
-                                                            .primaryColor),
-                                                  )),
-                                              // IconButton(
-                                              //   icon: const Icon(Icons.cancel,
-                                              //       color: AppColor.grey),
-                                              //   onPressed:
-                                              // ),
-                                            ],
-                                          ),
-                                        )
-                                      : null,
-                                  width: size.width,
-                                ),
-                                if (_itemImage == null)
-                                  const Text("Please Upload item image",
-                                      style: TextStyle(
-                                          color: Colors.red, fontSize: 12)),
-                                const SizedBox(height: 10),
-                                Visibility(
-                                  visible: shippingType == "International",
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 15),
-                                      Text(
-                                        'Country or Origin',
-                                        style: AppTextStyle.body(size: 14),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      DropdownButtonFormField<String>(
-                                        hint: Text(
-                                          'Choose Country',
-                                          style: AppTextStyle.body(size: 14),
-                                        ),
-                                        decoration: const InputDecoration(
-                                            enabledBorder: OutlineInputBorder(
-                                                borderSide:
-                                                    BorderSide(width: 0.3)),
-                                            focusedBorder: OutlineInputBorder(
-                                                borderSide: BorderSide(
-                                                    color:
-                                                        AppColor.primaryColor)),
-                                            border: OutlineInputBorder(
-                                                borderRadius: BorderRadius.all(
-                                              Radius.circular(10.0),
-                                            ))),
-                                        items: countries
-                                            .map<DropdownMenuItem<String>>(
-                                                (country) {
-                                          return DropdownMenuItem<String>(
-                                            value: country["isoCode"],
-                                            child: Text(
-                                              country["name"],
-                                              style:
-                                                  AppTextStyle.body(size: 14),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedCountry = value;
-                                          });
-                                          print("Selected Vehicle ID: $value");
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Shipment Type',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                DropdownButtonFormField<String>(
-                                  hint: Text(
-                                    'Choose Shipment Type',
-                                    style: AppTextStyle.body(size: 14),
-                                  ),
-                                  decoration: const InputDecoration(
-                                      enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 0.3)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.primaryColor)),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0),
-                                      ))),
-                                  items: shipmentTypes
-                                      .map<DropdownMenuItem<String>>(
-                                          (shipmentType) {
-                                    return DropdownMenuItem<String>(
-                                      value: shipmentType["code"],
-                                      child: Text(
-                                        shipmentType["name"],
-                                        style: AppTextStyle.body(size: 14),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  validator: (value) => value == null
-                                      ? 'Please select a shipment type'
-                                      : null,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedShipmentType = value;
-                                    });
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Item Name',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                AppTextFields(
-                                    controller: itemNameController,
-                                    validator: (value) => value!.isEmpty
-                                        ? 'Item name is required'
-                                        : null,
-                                    hint: 'Enter Name'),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Item Value',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                TextFormField(
-                                  controller: valueController,
-                                  keyboardType: TextInputType.number,
-                                  style: AppTextStyle.body(
-                                      fontWeight: FontWeight.normal, size: 12),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter
-                                        .digitsOnly, // Allows only numbers
-                                  ],
-                                  validator: (value) => value!.isEmpty
-                                      ? 'Enter item value'
-                                      : null,
-                                  decoration: InputDecoration(
-                                    hintText: 'Enter Value', // Placeholder text
-                                    suffixText: 'NGN', // Permanent suffix
-                                    focusedBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color: AppColor.primaryColor),
+                                                                .primaryColor),
+                                                      )),
+                                                  // IconButton(
+                                                  //   icon: const Icon(Icons.cancel,
+                                                  //       color: AppColor.grey),
+                                                  //   onPressed:
+                                                  // ),
+                                                ],
+                                              ),
+                                            )
+                                          : null,
+                                      width: size.width,
                                     ),
-                                    hintStyle: AppTextStyle.body(
-                                        size: 12.5,
-                                        fontWeight: FontWeight.normal),
-
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(width: 0.1),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Item Category',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                DropdownButtonFormField<String>(
-                                  hint: Text(
-                                    'Select Category',
-                                    style: AppTextStyle.body(size: 14),
-                                  ),
-                                  decoration: const InputDecoration(
-                                      enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 0.3)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.primaryColor)),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0),
-                                      ))),
-                                  items: itemCategories
-                                      .map<DropdownMenuItem<String>>(
-                                          (itemCategory) {
-                                    return DropdownMenuItem<String>(
-                                      value: itemCategory["name"],
-                                      child: Text(
-                                        itemCategory["name"],
-                                        style: AppTextStyle.body(size: 14),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  validator: (value) => value == null
-                                      ? 'Please select a category'
-                                      : null,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedItemCategory = value;
-                                    });
-                                    fetchSubCategories(value!, setModalState);
-                                    print("Selected Category: $value");
-                                  },
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Sub Category',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                DropdownButtonFormField<String>(
-                                  hint: Text(
-                                    'Select Sub Category',
-                                    style: AppTextStyle.body(size: 14),
-                                  ),
-                                  decoration: const InputDecoration(
-                                      enabledBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(width: 0.3)),
-                                      focusedBorder: OutlineInputBorder(
-                                          borderSide: BorderSide(
-                                              color: AppColor.primaryColor)),
-                                      border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(
-                                        Radius.circular(10.0),
-                                      ))),
-                                  items: itemSubCategories
-                                      .map<DropdownMenuItem<String>>(
-                                          (subCategory) {
-                                    return DropdownMenuItem<String>(
-                                      value: subCategory["name"],
-                                      child: Text(
-                                        subCategory["name"],
-                                        style: AppTextStyle.body(size: 14),
-                                      ),
-                                    );
-                                  }).toList(),
-                                  validator: (value) => value == null
-                                      ? 'Please select a subcategory'
-                                      : null,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      selectedSubCategory = value;
-                                    });
-                                    print("Selected Sub Category: $value");
-                                  },
-                                ),
-                                Visibility(
-                                    visible: shippingType == "INTL",
-                                    child: Column(
+                                    if (_itemImage == null)
+                                      const Text("Please Upload item image",
+                                          style: TextStyle(
+                                              color: Colors.red, fontSize: 12)),
+                                    const SizedBox(height: 10),
+                                    Visibility(
+                                      visible: shippingType == "International",
+                                      child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          const SizedBox(height: 10),
+                                          const SizedBox(height: 15),
                                           Text(
-                                            'Color',
+                                            'Country or Origin',
                                             style: AppTextStyle.body(size: 14),
                                           ),
                                           const SizedBox(height: 5),
-                                          AppTextFields(
-                                              controller: colorController,
-                                              hint: 'e.g black, green'),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            'What is it made of?',
-                                            style: AppTextStyle.body(size: 14),
+                                          DropdownButtonFormField<String>(
+                                            hint: Text(
+                                              'Choose Country',
+                                              style:
+                                                  AppTextStyle.body(size: 14),
+                                            ),
+                                            decoration: const InputDecoration(
+                                                enabledBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            width: 0.3)),
+                                                focusedBorder:
+                                                    OutlineInputBorder(
+                                                        borderSide: BorderSide(
+                                                            color: AppColor
+                                                                .primaryColor)),
+                                                border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.all(
+                                                  Radius.circular(10.0),
+                                                ))),
+                                            items: countries
+                                                .map<DropdownMenuItem<String>>(
+                                                    (country) {
+                                              return DropdownMenuItem<String>(
+                                                value: country["isoCode"],
+                                                child: Text(
+                                                  country["name"],
+                                                  style: AppTextStyle.body(
+                                                      size: 14),
+                                                ),
+                                              );
+                                            }).toList(),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                selectedCountry = value;
+                                              });
+                                              print(
+                                                  "Selected Vehicle ID: $value");
+                                            },
                                           ),
-                                          const SizedBox(height: 5),
-                                          AppTextFields(
-                                              controller: textController,
-                                              hint: 'e.g plastic, wood, metal'),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            'What is it used for?',
-                                            style: AppTextStyle.body(size: 14),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          AppTextFields(
-                                              controller: textController,
-                                              hint: 'e.g driving, sweeping'),
-                                          const SizedBox(height: 10),
-                                        ])),
-                                Text(
-                                  'Weight',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                TextFormField(
-                                  controller: weightController,
-                                  keyboardType: TextInputType.number,
-                                  style: AppTextStyle.body(
-                                      fontWeight: FontWeight.normal, size: 12),
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter
-                                        .digitsOnly, // Allows only numbers
-                                  ],
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        'Enter Weight', // Placeholder text
-                                    suffixText: 'KG', // Permanent suffix
-                                    focusedBorder: const OutlineInputBorder(
-                                      borderSide: BorderSide(
-                                          color: AppColor.primaryColor),
-                                    ),
-                                    hintStyle: AppTextStyle.body(
-                                        size: 12.5,
-                                        fontWeight: FontWeight.normal),
-
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                      borderSide: const BorderSide(width: 0.1),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'Qty',
-                                  style: AppTextStyle.body(size: 14),
-                                ),
-                                const SizedBox(height: 5),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        if (qty > 0) {
-                                          setModalState(() {
-                                            --qty;
-                                          });
-                                        }
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.all(12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
-                                        ),
-                                        backgroundColor: AppColor.white,
-                                      ),
-                                      child: const Icon(
-                                        Icons.remove,
-                                        color: AppColor.dark,
-                                        size: 24,
+                                        ],
                                       ),
                                     ),
+                                    const SizedBox(height: 10),
                                     Text(
-                                      "$qty",
+                                      'Shipment Type',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    DropdownButtonFormField<String>(
+                                      hint: Text(
+                                        'Choose Shipment Type',
+                                        style: AppTextStyle.body(size: 14),
+                                      ),
                                       style: AppTextStyle.body(
                                           fontWeight: FontWeight.bold,
-                                          size: 22),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        setModalState(() {
-                                          ++qty;
+                                          size: 15),
+                                      decoration: const InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide:
+                                                  BorderSide(width: 0.3)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color:
+                                                      AppColor.primaryColor)),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ))),
+                                      items: shipmentTypes
+                                          .map<DropdownMenuItem<String>>(
+                                              (shipmentType) {
+                                        return DropdownMenuItem<String>(
+                                          value: shipmentType["code"],
+                                          child: Text(
+                                            shipmentType["name"],
+                                            style: AppTextStyle.body(
+                                                fontWeight: FontWeight.bold,
+                                                size: 15),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      validator: (value) => value == null
+                                          ? 'Please select a shipment type'
+                                          : null,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedShipmentType = value;
                                         });
                                       },
-                                      style: ElevatedButton.styleFrom(
-                                        padding: const EdgeInsets.all(12),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(20),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Item Name',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    AppTextFields(
+                                        controller: itemNameController,
+                                        validator: (value) => value!.isEmpty
+                                            ? 'Item name is required'
+                                            : null,
+                                        hint: 'Enter Name'),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Item Value',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    TextFormField(
+                                      controller: valueController,
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      style: AppTextStyle.body(
+                                          fontWeight: FontWeight.normal,
+                                          size: 12),
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                            RegExp(r'^\d*\.?\d{0,2}')),
+                                      ],
+                                      validator: (value) => value!.isEmpty
+                                          ? 'Enter item value'
+                                          : null,
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            'Enter Value', // Placeholder text
+                                        suffixText: 'NGN', // Permanent suffix
+                                        focusedBorder: const OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: AppColor.primaryColor),
                                         ),
-                                        backgroundColor: AppColor.dark,
-                                      ),
-                                      child: const Icon(
-                                        Icons.add, // Plus icon
-                                        color: AppColor.white, // Icon color
-                                        size: 24, // Icon size
+                                        hintStyle: AppTextStyle.body(
+                                            size: 12.5,
+                                            fontWeight: FontWeight.normal),
+
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide:
+                                              const BorderSide(width: 0.1),
+                                        ),
                                       ),
                                     ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Item Category',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    DropdownButtonFormField<String>(
+                                      hint: Text(
+                                        'Select Category',
+                                        style: AppTextStyle.body(size: 14),
+                                      ),
+                                      style: AppTextStyle.body(
+                                          fontWeight: FontWeight.bold,
+                                          size: 15),
+                                      decoration: const InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide:
+                                                  BorderSide(width: 0.3)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color:
+                                                      AppColor.primaryColor)),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ))),
+                                      items: itemCategories
+                                          .map<DropdownMenuItem<String>>(
+                                              (itemCategory) {
+                                        return DropdownMenuItem<String>(
+                                          value: itemCategory["name"],
+                                          child: Text(
+                                            itemCategory["name"],
+                                            style: AppTextStyle.body(
+                                                fontWeight: FontWeight.bold,
+                                                size: 15),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      validator: (value) => value == null
+                                          ? 'Please select a category'
+                                          : null,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedItemCategory = value;
+                                        });
+                                        fetchSubCategories(
+                                            value!, setModalState);
+                                        print("Selected Category: $value");
+                                      },
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Sub Category',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    DropdownButtonFormField<String>(
+                                      hint: Text(
+                                        'Select Sub Category',
+                                        style: AppTextStyle.body(size: 14),
+                                      ),
+                                      style: AppTextStyle.body(
+                                          fontWeight: FontWeight.bold,
+                                          size: 15),
+                                      decoration: const InputDecoration(
+                                          enabledBorder: OutlineInputBorder(
+                                              borderSide:
+                                                  BorderSide(width: 0.3)),
+                                          focusedBorder: OutlineInputBorder(
+                                              borderSide: BorderSide(
+                                                  color:
+                                                      AppColor.primaryColor)),
+                                          border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.all(
+                                            Radius.circular(10.0),
+                                          ))),
+                                      items: itemSubCategories
+                                          .map<DropdownMenuItem<String>>(
+                                              (subCategory) {
+                                        return DropdownMenuItem<String>(
+                                          value: subCategory["name"],
+                                          child: Text(
+                                            subCategory["name"],
+                                            style: AppTextStyle.body(
+                                                fontWeight: FontWeight.bold,
+                                                size: 15),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      validator: (value) => value == null
+                                          ? 'Please select a subcategory'
+                                          : null,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          selectedSubCategory = value;
+                                        });
+                                        print("Selected Sub Category: $value");
+                                      },
+                                    ),
+                                    Visibility(
+                                        visible: shippingType == "INTL",
+                                        child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                'Color',
+                                                style:
+                                                    AppTextStyle.body(size: 14),
+                                              ),
+                                              const SizedBox(height: 5),
+                                              AppTextFields(
+                                                  controller: colorController,
+                                                  hint: 'e.g black, green'),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                'What is it made of?',
+                                                style:
+                                                    AppTextStyle.body(size: 14),
+                                              ),
+                                              const SizedBox(height: 5),
+                                              AppTextFields(
+                                                  controller:
+                                                      materialController,
+                                                  hint:
+                                                      'e.g plastic, wood, metal'),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                'What is it used for?',
+                                                style:
+                                                    AppTextStyle.body(size: 14),
+                                              ),
+                                              const SizedBox(height: 5),
+                                              AppTextFields(
+                                                  controller: useController,
+                                                  hint:
+                                                      'e.g driving, sweeping'),
+                                              const SizedBox(height: 10),
+                                            ])),
+                                    Text(
+                                      'Weight',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    TextFormField(
+                                      controller: weightController,
+                                      keyboardType:
+                                          TextInputType.numberWithOptions(
+                                              decimal: true),
+                                      style: AppTextStyle.body(
+                                          fontWeight: FontWeight.bold,
+                                          size: 15),
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.allow(
+                                            RegExp(r'^\d*\.?\d{0,2}')),
+                                      ],
+                                      decoration: InputDecoration(
+                                        hintText:
+                                            'Enter Weight', // Placeholder text
+                                        suffixText: 'KG', // Permanent suffix
+                                        focusedBorder: const OutlineInputBorder(
+                                          borderSide: BorderSide(
+                                              color: AppColor.primaryColor),
+                                        ),
+                                        hintStyle: AppTextStyle.body(
+                                            size: 12.5,
+                                            fontWeight: FontWeight.normal),
+
+                                        border: OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          borderSide:
+                                              const BorderSide(width: 0.1),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      'Qty',
+                                      style: AppTextStyle.body(size: 14),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            if (qty > 0) {
+                                              setModalState(() {
+                                                --qty;
+                                              });
+                                            }
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.all(12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            backgroundColor: AppColor.white,
+                                          ),
+                                          child: const Icon(
+                                            Icons.remove,
+                                            color: AppColor.dark,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        Text(
+                                          "$qty",
+                                          style: AppTextStyle.body(
+                                              fontWeight: FontWeight.bold,
+                                              size: 22),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () {
+                                            setModalState(() {
+                                              ++qty;
+                                            });
+                                          },
+                                          style: ElevatedButton.styleFrom(
+                                            padding: const EdgeInsets.all(12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            backgroundColor: AppColor.dark,
+                                          ),
+                                          child: const Icon(
+                                            Icons.add, // Plus icon
+                                            color: AppColor.white, // Icon color
+                                            size: 24, // Icon size
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    if (qty == 0) // ✅ Show error if qty is 0
+                                      const Text("Quantity must be at least 1",
+                                          style: TextStyle(
+                                              color: Colors.red, fontSize: 12)),
+                                    const SizedBox(height: 50),
+                                    AppButton(
+                                        title: 'Add Item',
+                                        onTap: () async {
+                                          if (_formKey.currentState!
+                                              .validate()) {
+                                            if (_itemImage == null) return;
+                                            await _saveItemInfo();
+                                          }
+                                        }),
+                                    const SizedBox(height: 30),
                                   ],
-                                ),
-                                if (qty == 0) // ✅ Show error if qty is 0
-                                  const Text("Quantity must be at least 1",
-                                      style: TextStyle(
-                                          color: Colors.red, fontSize: 12)),
-                                const SizedBox(height: 50),
-                                AppButton(
-                                    title: 'Add Item',
-                                    onTap: () async {
-                                      if (_formKey.currentState!.validate()) {
-                                        if (_itemImage == null) return;
-                                        await _saveItemInfo();
-                                      }
-                                    }),
-                                const SizedBox(height: 30),
-                              ],
-                            )),
+                                )),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          },
-        );
+                    ),
+                  )));
+            },
+          );
+        });
       },
     );
   }
@@ -1215,6 +1282,7 @@ class _NewShipmentState extends State<NewShipment> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: AppColor.primaryColor, // Header color
         elevation: 0,
@@ -1273,14 +1341,15 @@ class _NewShipmentState extends State<NewShipment> {
           Expanded(
             child: Stack(
               children: [
-                SingleChildScrollView(
+                SafeArea(
+                    child: SingleChildScrollView(
                   physics: const ClampingScrollPhysics(),
                   controller: _scrollController1,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
                     child: getWidgetForCase(newShipmentStep),
                   ),
-                ),
+                )),
                 if (isLoading)
                   Container(
                     color: Colors.black.withOpacity(0.5),
@@ -1408,16 +1477,21 @@ class _NewShipmentState extends State<NewShipment> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const SizedBox(height: 30),
-              Center(
+              Container(
+                width: size.width,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
                   child: Column(
                     children: categories.map((item) {
                       return Column(
                         children: [
                           ItemButton(
                             isActive: shippingType == item["code"],
-                            imagePath: AppImages.world,
+                            imagePath: (item["code"] == "INTRA")
+                                ? AppImages.intra
+                                : (item["code"] == "INTER")
+                                    ? AppImages.inter
+                                    : AppImages.world,
                             title: item["name"],
                             subtitle: item["description"],
                             onTap: () {
@@ -1491,6 +1565,16 @@ class _NewShipmentState extends State<NewShipment> {
                 ),
                 const SizedBox(height: 5),
                 AppTextFields(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone number cannot be empty';
+                    } else if (!RegExp(r'^\d+$').hasMatch(value)) {
+                      return 'Phone number must contain only digits';
+                    } else if (value.length < 10 || value.length > 15) {
+                      return 'Phone number must be between 10 and 15 digits';
+                    }
+                    return null;
+                  },
                   controller: numberController,
                   hint: 'Input Sender Phone Number',
                   isReadOnly: true,
@@ -1512,7 +1596,7 @@ class _NewShipmentState extends State<NewShipment> {
                     SizedBox(
                       width: 280,
                       child: Text(
-                        'Pickup location is same as my current location',
+                        'Pickup location is same as my profile location',
                         style: AppTextStyle.body(size: 14),
                       ),
                     ),
@@ -1583,6 +1667,14 @@ class _NewShipmentState extends State<NewShipment> {
                       ),
                       const SizedBox(height: 5),
                       AppTextFields(
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Post Code cannot be empty';
+                            } else if (!RegExp(r'^\d+$').hasMatch(value)) {
+                              return 'Post Code must contain only digits';
+                            }
+                            return null;
+                          },
                           controller: postCodeController,
                           hint: 'Input Post Code'),
                       const SizedBox(height: 15),
@@ -1591,49 +1683,44 @@ class _NewShipmentState extends State<NewShipment> {
                         style: AppTextStyle.body(size: 14),
                       ),
                       const SizedBox(height: 5),
-                      SizedBox(
-                        height: size.height * 0.18,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: addressController,
-                              style: AppTextStyle.body(
-                                  fontWeight: FontWeight.normal,
-                                  size: 12,
-                                  color: AppColor.lightdark),
-                              decoration: const InputDecoration(
-                                hintText: "Enter Address",
-                                suffixIcon: Icon(Icons.location_on),
-                                border: OutlineInputBorder(),
-                              ),
-                              onChanged: (value) {
-                                if (value.isNotEmpty) fetchPlaces(value);
-                              },
+                      Column(
+                        children: [
+                          TextFormField(
+                            controller: addressController,
+                            style: AppTextStyle.body(
+                                fontWeight: FontWeight.bold, size: 15),
+                            decoration: const InputDecoration(
+                              hintText: "Enter Address",
+                              suffixIcon: Icon(Icons.location_on),
+                              border: OutlineInputBorder(),
                             ),
-                            SizedBox(
-                              height: size.height * 0.1,
-                              child: ListView.builder(
-                                itemCount: _placesList.length,
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    title: Text(
-                                      _placesList[index]["description"],
+                            onChanged: (value) {
+                              if (value.isNotEmpty) fetchPlaces(value);
+                            },
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            height: _placesList.isNotEmpty
+                                ? size.height * 0.12
+                                : 0, // Dynamic height
+                            child: ListView.builder(
+                              itemCount: _placesList.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                  title: Text(_placesList[index]["description"],
                                       style: AppTextStyle.body(
                                           fontWeight: FontWeight.normal,
-                                          size: 12,
-                                          color: AppColor.lightdark),
-                                    ),
-                                    onTap: () {
-                                      getPlaceDetails(
-                                          _placesList[index]["place_id"],
-                                          "Sender");
-                                    },
-                                  );
-                                },
-                              ),
+                                          size: 15)),
+                                  onTap: () {
+                                    getPlaceDetails(
+                                        _placesList[index]["place_id"],
+                                        "Sender");
+                                  },
+                                );
+                              },
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1725,6 +1812,16 @@ class _NewShipmentState extends State<NewShipment> {
               ),
               const SizedBox(height: 5),
               AppTextFields(
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone number cannot be empty';
+                    } else if (!RegExp(r'^\d+$').hasMatch(value)) {
+                      return 'Phone number must contain only digits';
+                    } else if (value.length < 10 || value.length > 15) {
+                      return 'Phone number must be between 10 and 15 digits';
+                    }
+                    return null;
+                  },
                   controller: receiverNumberController,
                   hint: 'Input Phone Number'),
               const SizedBox(height: 10),
@@ -1745,10 +1842,7 @@ class _NewShipmentState extends State<NewShipment> {
                   TextFormField(
                     controller: receiverAddressController,
                     style: AppTextStyle.body(
-                      fontWeight: FontWeight.normal,
-                      size: 12,
-                      color: AppColor.lightdark,
-                    ),
+                        fontWeight: FontWeight.bold, size: 15),
                     decoration: const InputDecoration(
                       hintText: "Enter Address",
                       suffixIcon:
@@ -1779,10 +1873,7 @@ class _NewShipmentState extends State<NewShipment> {
                           title: Text(
                             _placesList[index]["description"],
                             style: AppTextStyle.body(
-                              fontWeight: FontWeight.normal,
-                              size: 12,
-                              color: AppColor.lightdark,
-                            ),
+                                fontWeight: FontWeight.normal, size: 15),
                           ),
                           onTap: () {
                             getPlaceDetails(
@@ -1802,8 +1893,6 @@ class _NewShipmentState extends State<NewShipment> {
                   AppTextFields(
                     controller: receiverPostCodeController,
                     hint: 'Input Post Code',
-                    isReadOnly:
-                        true, // Prevent user edits since it's auto-filled
                   ),
 
                   // City/Province Dropdown
@@ -1827,15 +1916,32 @@ class _NewShipmentState extends State<NewShipment> {
                     ),
                     items: states.map<DropdownMenuItem<String>>((state) {
                       return DropdownMenuItem<String>(
-                        value: state["code"],
-                        child: Text(state["name"],
-                            style: AppTextStyle.body(size: 14)),
+                        value: state["name"],
+                        child: Text(
+                          state["name"],
+                          style: AppTextStyle.body(
+                              fontWeight: FontWeight.bold, size: 15),
+                        ),
                       );
                     }).toList(),
                     onChanged: (String? newValue) {
+                        print("Selected state code: $newValue");
                       if (newValue != null) {
-                        receiverCityController.text = newValue;
+                        final selectedState = states
+                            .firstWhere((state) => state["name"] == newValue);
+                        setState(() {
+                          destinationLocationCode = selectedState["code"];
+                          receiverCityController.text = selectedState["name"];
+                        });
+                        print("Selected state code: $destinationLocationCode");
                       }
+                      //   print(selectedState);
+                      // final selectedState = states.firstWhere((state) => state["code"] == newValue);
+
+                      // if (newValue != null) {
+                      //   receiverCityController.text = newValue;
+                      //   destinationLocationCode = selectedState["code"];
+                      // }
                     },
                   ),
                 ],
@@ -2082,7 +2188,7 @@ class _NewShipmentState extends State<NewShipment> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Column(
                   children: couriers.map((item) {
                     return Column(
@@ -2091,7 +2197,9 @@ class _NewShipmentState extends State<NewShipment> {
                         ItemButton(
                           isActive: orderRequest["vehicleType"] ==
                               item["vehicleType"],
-                          imagePath: AppImages.bike,
+                          imagePath: AppImages.imagePath +
+                              "/" +
+                              "${item["vehicleType"].toString().toLowerCase()}.png",
                           title: item["vehicleType"],
                           subtitle: "${item["amount"]}",
                           onTap: () {
@@ -2203,9 +2311,7 @@ class _NewShipmentState extends State<NewShipment> {
                                 isActive: orderRequest["deliveryPartnerCode"] ==
                                     item["deliveryPartnerCode"],
                                 imagePath: AppImages.world,
-                                title: item["displayName"].length > 15
-                                    ? '${item["displayName"].substring(0, 15)}...'
-                                    : item["displayName"],
+                                title: item["displayName"],
                                 subtitle: "${item["duration"]} days",
                                 trailing: "${item["amount"]}",
                                 onTap: () {
